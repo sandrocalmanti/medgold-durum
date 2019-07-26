@@ -83,7 +83,17 @@ while read iyy; do
 
  #Derive RH from Td.  Daily average temp is a byproduct from Tmin and Tmax
  if [ -f "tmax2m${OUTSUFFIX}" -a -f "tmin2m${OUTSUFFIX}" -a -f "2d${OUTSUFFIX}" ]; then
+  if [ -f "rh${OUTSUFFIX}" ]; then
+   echo "WARNING - rh${OUTSUFFIX} exists, skip computation of relative humidity"
+  else
    echo "INFO    - Compute RH"
+   cdo -merge tmax2m${OUTSUFFIX} tmin2m${OUTSUFFIX} tmp.nc
+   cdo -expr,'t2m=(mx2t24+mn2t24)*0.5' tmp.nc t2m${OUTSUFFIX}
+   cdo -merge 2d${OUTSUFFIX} t2m${OUTSUFFIX} temp${OUTSUFFIX}
+   rm -f tmp.nc
+   cdo -expr,'rh=100*((0.611*exp(5423*((1/273) - (1/d2m))))/(0.611*exp(5423*((1/273) - (1/t2m)))));' temp${OUTSUFFIX} rh${OUTSUFFIX}
+   rm -f temp${OUTSUFFIX}
+  fi
  else
    echo "WARNING - Temperature for ${iyy}-${month} not found. Check tmin, tmax, t2d. Skip computation of RH"
  fi
