@@ -10,15 +10,22 @@ START_TIME=$SECONDS
 ERRLOG=retrieve_medgold-platform_months_$now.err
 STDOUT=retrieve_medgold-platform_months_$now.log
 
-
-#Remote archive
-pth_rmt='http://data.med-gold.eu/ecmwf/o'
+WDIR=`pwd`
+ARCHIVELOCAL='/home/sandro/DATA/SEASONAL/ECMF'
+ARCHIVEREMOTE='http://data.med-gold.eu/ecmwf/o'
 
 while read iyy; do
  while read month; do
   while read varname; do
+    cd ${ARCHIVELOCAL}
+
+    #Get data from the remote archive 
+    #(consider upgrading/integrating this this with direct retrieval from the CDS
+    FILEIN=ecmf_${iyy}${month}${varname}.grib
     FILEOUT=${varname}_ecmf_${iyy}`printf "%02d" "$month"`01.nc
-    wget -o $STDOUT ${pth_rmt}/${iyy}/${month}/ecmf_${iyy}${month}${varname}.grib
+    wget -o $STDOUT ${ARCHIVEREMOTE}/${iyy}/${month}/${FILEIN}
+ 
+    #Convert to NetCDF
     grib_to_netcdf -o tmp.nc ecmf_${iyy}${month}${varname}.grib
     cdo -r -f nc copy tmp.nc ${FILEOUT}
     rm tmp.nc
@@ -27,6 +34,7 @@ while read iyy; do
     if [ $? -ne 0 ]; then
       echo ERROR - Retrieving ecmf_${iyy}${month}${varname}.grib >> $ERRLOG
     fi
+
 
     #Process rainfall, derive daily cumulated
     if [ ${varname} == 'totprec' ]; then
@@ -40,6 +48,8 @@ while read iyy; do
       cdo -b 32 -shifttime,1day tmp_D.nc ${FILEOUT}
       rm tmp*.nc
     fi
+    
+    cd ${WDIR}
   done < retrieve_medgold-platform_vars.in
 
  #Derive wss using v10 and u10. Rescale wss10 to 2m for the computation of potential evpotranspiration
