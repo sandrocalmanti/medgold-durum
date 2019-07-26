@@ -43,10 +43,14 @@ while read iyy; do
     else
      #Convert to NetCDF
      grib_to_netcdf -o tmp.nc ${FILEIN}
+     #A simple copy with cdo fixes some of the general attributes
      cdo -r -f nc copy tmp.nc ${FILEOUT}
      rm tmp.nc
+     #Rename "number" to "ensemble" makes the file readable with ncview
      ncrename -v number,ensemble -d number,ensemble ${FILEOUT}
+     #Add the axis "E" to comply with the standard naming of ensmble members in GRADS
      ncatted -O -a axis,ensemble,m,c,"E" ${FILEOUT}
+
 
      #Process rainfall, derive daily cumulated
      if [ ${varname} == 'totprec' ]; then
@@ -75,6 +79,8 @@ while read iyy; do
    echo "INFO    - Compute wss and rescale to wss2"
    cdo -merge 10v${OUTSUFFIX} 10u${OUTSUFFIX} wind${OUTSUFFIX}
    cdo -expr,'wss=sqrt(u10*u10+u10*u10)' wind${OUTSUFFIX} wss${OUTSUFFIX}
+   ncatted -O -a long_name,wss,o,c,"10 metre wind speed" wss${OUTSUFFIX}
+   ncatted -O -a units,wss,o,c,"m s**-1" wss${OUTSUFFIX}
    rm -f wind${OUTSUFFIX}
   fi
  else
@@ -90,9 +96,14 @@ while read iyy; do
    cdo -merge tmax2m${OUTSUFFIX} tmin2m${OUTSUFFIX} tmp.nc
    cdo -expr,'t2m=(mx2t24+mn2t24)*0.5' tmp.nc t2m${OUTSUFFIX}
    cdo -merge 2d${OUTSUFFIX} t2m${OUTSUFFIX} temp${OUTSUFFIX}
-   rm -f tmp.nc
    cdo -expr,'rh=100*((0.611*exp(5423*((1/273) - (1/d2m))))/(0.611*exp(5423*((1/273) - (1/t2m)))));' temp${OUTSUFFIX} rh${OUTSUFFIX}
+   ncatted -O -a long_name,t2m,o,c,"2 metre temerature" t2m${OUTSUFFIX}
+   ncatted -O -a units,t2m,o,c,"K" t2m${OUTSUFFIX}
+   ncatted -O -a long_name,rh,o,c,"2 metre relative humidity" rh${OUTSUFFIX}
+   ncatted -O -a units,rh,o,c," " rh${OUTSUFFIX}
    rm -f temp${OUTSUFFIX}
+   rm -f tmp.nc
+   
   fi
  else
    echo "WARNING - Temperature for ${iyy}-${month} not found. Check tmin, tmax, t2d. Skip computation of RH"
