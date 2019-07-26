@@ -20,20 +20,21 @@ while read iyy; do
  mkdir -p ${ARCHIVEGRIB}
  mkdir -p ${ARCHIVENC}
  while read month; do
+  OUTSUFFIX=_ecmf_${iyy}`printf "%02d" "$month"`01.nc
   while read varname; do
     cd ${ARCHIVEGRIB}
 
     #Get data from the remote archive 
     #(consider upgrading/integrating this this with direct retrieval from the CDS
     FILEIN=ecmf_${iyy}${month}${varname}.grib
-    FILEOUT=${ARCHIVENC}/${varname}_ecmf_${iyy}`printf "%02d" "$month"`01.nc
+    FILEOUT=${ARCHIVENC}/${varname}${OUTSUFFIX}
     if [ -f ${FILEIN} ]; then
-     echo INFO - ${ARCHIVEGRIB}/${FILEIN} exists, skip retrieval
+     echo "INFO    - ${ARCHIVEGRIB}/${FILEIN} exists, skip retrieval"
     else
-     echo INFO - Retrieving ${ARCHIVEGRIB}/${FILEIN} ...
+     echo "INFO    - Retrieving ${ARCHIVEGRIB}/${FILEIN} ..."
      wget -o $STDOUT ${ARCHIVEREMOTE}/${iyy}/${month}/${FILEIN}
      if [ $? -ne 0 ]; then
-      echo ERROR - Retrieving ecmf_${iyy}${month}${varname}.grib >> $ERRLOG
+      echo ERROR   - Retrieving ecmf_${iyy}${month}${varname}.grib >> $ERRLOG
      fi
     fi    
 
@@ -66,9 +67,26 @@ while read iyy; do
   done < retrieve_medgold-platform_vars.in
 
  #Derive wss using v10 and u10. Rescale wss10 to 2m for the computation of potential evpotranspiration
+  cd ${ARCHIVENC}
+ if [ -f "10v${OUTSUFFIX}" -a -f "10u${OUTSUFFIX}" ]; then
+  if [ -f "wss${OUTSUFFIX}" ]; then
+   echo "WARNING - wss${OUTSUFFIX} exists, skip computation of wind speed"
+  else
+   echo "INFO    - Compute wss and rescale to wss2"
+   cdo -merge 10v${OUTSUFFIX} 10u${OUTSUFFIX} wind${OUTSUFFIX}
+   cdo -expr,'wss=sqrt(u10*u10+u10*u10)' wind${OUTSUFFIX} wss${OUTSUFFIX}
+   rm -f wind${OUTSUFFIX}
+  fi
+ else
+  echo WARNING - Wind components for ${iyy}-${month} not found. Skip computation of wind speed
+ fi
 
- #Derive RH from Td.  Deil average temp is a byproduct from Tmin and Tmax
-
+ #Derive RH from Td.  Daily average temp is a byproduct from Tmin and Tmax
+ if [ -f "tmax2m${OUTSUFFIX}" -a -f "tmin2m${OUTSUFFIX}" -a -f "2d${OUTSUFFIX}" ]; then
+   echo "INFO    - Compute RH"
+ else
+   echo "WARNING - Temperature for ${iyy}-${month} not found. Check tmin, tmax, t2d. Skip computation of RH"
+ fi
 
 
  done < retrieve_medgold-platform_months.in
