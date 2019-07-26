@@ -15,17 +15,22 @@ ARCHIVELOCAL='/home/sandro/DATA/SEASONAL/ECMF'
 ARCHIVEREMOTE='http://data.med-gold.eu/ecmwf/o'
 
 while read iyy; do
+ ARCHIVEGRIB=${ARCHIVELOCAL}/GRIB/${iyy}
+ ARCHIVENC=${ARCHIVELOCAL}/NC/${iyy}
+ mkdir -p ${ARCHIVEGRIB}
+ mkdir -p ${ARCHIVENC}
  while read month; do
   while read varname; do
-    cd ${ARCHIVELOCAL}
+    cd ${ARCHIVEGRIB}
 
     #Get data from the remote archive 
     #(consider upgrading/integrating this this with direct retrieval from the CDS
     FILEIN=ecmf_${iyy}${month}${varname}.grib
-    FILEOUT=${varname}_ecmf_${iyy}`printf "%02d" "$month"`01.nc
+    FILEOUT=${ARCHIVENC}/${varname}_ecmf_${iyy}`printf "%02d" "$month"`01.nc
     if [ -f ${FILEIN} ]; then
-     echo INFO - ${FILEIN} exists, skip retrieval
+     echo INFO - ${ARCHIVEGRIB}/${FILEIN} exists, skip retrieval
     else
+     echo INFO - Retrieving ${ARCHIVEGRIB}/${FILEIN} ...
      wget -o $STDOUT ${ARCHIVEREMOTE}/${iyy}/${month}/${FILEIN}
      if [ $? -ne 0 ]; then
       echo ERROR - Retrieving ecmf_${iyy}${month}${varname}.grib >> $ERRLOG
@@ -36,7 +41,7 @@ while read iyy; do
       echo WARNING - ${FILEOUT} exists, skip processing processing
     else
      #Convert to NetCDF
-     grib_to_netcdf -o tmp.nc ecmf_${iyy}${month}${varname}.grib
+     grib_to_netcdf -o tmp.nc ${FILEIN}
      cdo -r -f nc copy tmp.nc ${FILEOUT}
      rm tmp.nc
      ncrename -v number,ensemble -d number,ensemble ${FILEOUT}
@@ -44,6 +49,7 @@ while read iyy; do
 
      #Process rainfall, derive daily cumulated
      if [ ${varname} == 'totprec' ]; then
+      cd ${ARCHIVENC}
       mv ${FILEOUT} tmp.nc
       cdo -delete,timestep=1  -shifttime,-1day tmp.nc tmp_B.nc
       cdo -delete,timestep=-1 tmp.nc tmp_A.nc
