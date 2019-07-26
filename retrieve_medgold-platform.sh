@@ -23,21 +23,27 @@ while read iyy; do
     #(consider upgrading/integrating this this with direct retrieval from the CDS
     FILEIN=ecmf_${iyy}${month}${varname}.grib
     FILEOUT=${varname}_ecmf_${iyy}`printf "%02d" "$month"`01.nc
-    wget -o $STDOUT ${ARCHIVEREMOTE}/${iyy}/${month}/${FILEIN}
- 
-    #Convert to NetCDF
-    grib_to_netcdf -o tmp.nc ecmf_${iyy}${month}${varname}.grib
-    cdo -r -f nc copy tmp.nc ${FILEOUT}
-    rm tmp.nc
-    ncrename -v number,ensemble -d number,ensemble ${FILEOUT}
-    ncatted -O -a axis,ensemble,m,c,"E" ${FILEOUT}
-    if [ $? -ne 0 ]; then
+    if [ -f ${FILEIN} ]; then
+     echo INFO - ${FILEIN} exists, skip retrieval
+    else
+     wget -o $STDOUT ${ARCHIVEREMOTE}/${iyy}/${month}/${FILEIN}
+     if [ $? -ne 0 ]; then
       echo ERROR - Retrieving ecmf_${iyy}${month}${varname}.grib >> $ERRLOG
-    fi
+     fi
+    fi    
 
+    if [ -f ${FILEOUT} ]; then
+      echo WARNING - ${FILEOUT} exists, skip processing processing
+    else
+     #Convert to NetCDF
+     grib_to_netcdf -o tmp.nc ecmf_${iyy}${month}${varname}.grib
+     cdo -r -f nc copy tmp.nc ${FILEOUT}
+     rm tmp.nc
+     ncrename -v number,ensemble -d number,ensemble ${FILEOUT}
+     ncatted -O -a axis,ensemble,m,c,"E" ${FILEOUT}
 
-    #Process rainfall, derive daily cumulated
-    if [ ${varname} == 'totprec' ]; then
+     #Process rainfall, derive daily cumulated
+     if [ ${varname} == 'totprec' ]; then
       mv ${FILEOUT} tmp.nc
       cdo -delete,timestep=1  -shifttime,-1day tmp.nc tmp_B.nc
       cdo -delete,timestep=-1 tmp.nc tmp_A.nc
@@ -47,6 +53,7 @@ while read iyy; do
       cdo -O -mergetime tmp_A1.nc tmp_C.nc tmp_D.nc
       cdo -b 32 -shifttime,1day tmp_D.nc ${FILEOUT}
       rm tmp*.nc
+     fi 
     fi
     
     cd ${WDIR}
