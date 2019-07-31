@@ -114,10 +114,7 @@ for (ivar in seq(1, length(variable))) {
   
   exp <- list(list(
     name = 'ecmf',
-    path = file.path(
-      '/home/sandro/DATA/SEASONAL/ECMF/',
-      '$VAR_NAME$_$EXP_NAME$_$START_DATE$.nc'
-    ),
+    path = file.path('/dove/sandro/DATI/SEASONAL/ECMF/NC/$YEAR$/$VAR_NAME$_$EXP_NAME$_$START_DATE$.nc'),
     nc_var_name = variable[[ivar]]$exp_var_name,
     var_min = variable[[ivar]]$exp_var_min
   ))
@@ -142,8 +139,8 @@ for (ivar in seq(1, length(variable))) {
     lonmin = domain[[idomain]]$lonmin,
     lonmax = domain[[idomain]]$lonmax,
     grid = 'r1440x720',
-    nprocs = 8
-  )
+    nprocs = 8,
+    path_glob_permissive = TRUE)
   
   # c(exp_dat) %<-% CST_Load(
   #   var = variable[[ivar]]$exp_fil_name,
