@@ -142,24 +142,18 @@ for (ivar in seq(1, length(variable))) {
     nprocs = 8,
     path_glob_permissive = TRUE)
   
-  # c(exp_dat) %<-% CST_Load(
-  #   var = variable[[ivar]]$exp_fil_name,
-  #   exp = exp,
-  #   sdates = sdates,
-  #   storefreq = 'daily',
-  #   output = 'lonlat',
-  #   latmin = domain[[idomain]]$latmin,
-  #   latmax = domain[[idomain]]$latmax,
-  #   lonmin = domain[[idomain]]$lonmin,
-  #   lonmax = domain[[idomain]]$lonmax,
-  #   nprocs = 8
-  # )
-  
   attr(exp_dat, 'class') <- 's2dv_cube'
   attr(obs_dat, 'class') <- 's2dv_cube'
   
-  exp_cst <- CST_Calibration(exp = exp_dat, obs = obs_dat)
-#  exp_cst <- exp_dat
+  if ( variable[[ivar]]$exp_var_name != 'tp' ) {
+    
+    exp_cst <- CST_Calibration(exp = exp_dat, obs = obs_dat)
+    
+  } else { 
+    
+    exp_cst <- exp_dat
+    
+  }
   
   end_time <- Sys.time()
   
