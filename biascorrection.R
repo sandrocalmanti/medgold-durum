@@ -221,16 +221,19 @@ for (ivar in seq(1, length(variable))) {
     #Define Members
     ensmem <- as.integer(seq(1:nmem))
     
+    #Create dir 
+    dirname <- paste0('/dove/sandro/DATI/SEASONAL/ECMF/BC/',year(sdate),'/')
+    if ( !dir.exists(dirname)) {dir.create(dirname)}
+    
     #Define filename
     ncfname <-
-      paste0(
-        '/home/sandro/DATA/SEASONAL/ECMF/BC/',
-        variable[[ivar]]$exp_fil_name,
-        '_ecmf_',
-        fdate,
-        '_',
-        domain[[idomain]]$fname,
-        '.nc'
+      paste0(dirname,
+             variable[[ivar]]$exp_fil_name,
+             '_ecmf_',
+             fdate,
+             '_',
+             domain[[idomain]]$fname,
+             '.nc'
       )
     print(ncfname)
     
