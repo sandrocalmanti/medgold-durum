@@ -70,17 +70,41 @@ variable <- list(
         exp_var_min='0',
         obs_var_name='tp',
         obs_var_suffix='daysum',
+        obs_var_min='0'),
+  list( exp_fil_name='rh',
+        exp_var_name='rh',
+        exp_var_longname='2 metre relative humidity',
+        exp_var_unit=' ',
+        exp_var_min='0',
+        obs_var_name='rh',
+        obs_var_suffix='dayavg',
+        obs_var_min='0'),
+  list( exp_fil_name='ssrd',
+        exp_var_name='ssrd',
+        exp_var_longname='Surface solar radiation downwards',
+        exp_var_unit='J m**-2',
+        exp_var_min='0',
+        obs_var_name='ssrd',
+        obs_var_suffix='daysum',
+        obs_var_min='0'),
+  list( exp_fil_name='wss',
+        exp_var_name='wss',
+        exp_var_longname='10 metre wind speed',
+        exp_var_unit='m s**-1',
+        exp_var_min='0',
+        obs_var_name='wss',
+        obs_var_suffix='dayavg',
+        obs_var_min='0'),
+  list( exp_fil_name='t2m',
+        exp_var_name='t2m',
+        exp_var_longname='10 metre temperature',
+        exp_var_unit='K',
+        exp_var_min='0',
+        obs_var_name='t2m',
+        obs_var_suffix='dayavg',
         obs_var_min='0')
 )
 
-# exp_var_names <- c('tmin2m', 'tmax2m', 'totprec')
-# nc_var_names <- c('mn2t24', 'mx2t24', 'tp')
-# nc_var_longnames <-
-#   c('Minimum temperature at 2 metres in the last 24 hours',
-#     'Maximum temperature at 2 metres in the last 24 hours',
-#     'Total precipitation'
-#   )
-# nc_var_units <- c('K', 'K', 'm')
 
 #Start processing
 for (ivar in seq(1, length(variable))) {
