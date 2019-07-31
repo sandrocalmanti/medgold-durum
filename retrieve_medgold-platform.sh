@@ -103,12 +103,12 @@ while read iyy; do
    ncatted -O -a units,rh,o,c," " rh${OUTSUFFIX}
    rm -f temp${OUTSUFFIX}
    rm -f tmp.nc
-   
   fi
  else
    echo "WARNING - Temperature for ${iyy}-${month} not found. Check tmin, tmax, t2d. Skip computation of RH"
  fi
 
+cd ${WDIR}
 
  done < retrieve_medgold-platform_months.in
 done < retrieve_medgold-platform_years.in
