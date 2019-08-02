@@ -6,7 +6,13 @@
 #    v1.1 04/07/2019 S. Calmanti - Write NetCDF output with the sys5 standards
 #
 ##############################################################################
-
+#
+# INFO - Batch mode submission
+# R --vanilla --slave -f <scriptname>.R > R.log > R.err &
+#
+# --vanilla Combine --no-save, --no-restore, --no-site-file, --no-init-file and --no-environ
+# --slave Make R run as quietly as possible
+#
 #Clean all
 rm(list = ls())
 
@@ -17,7 +23,16 @@ library(CSTools)
 library(zeallot)
 library(lubridate)
 
-
+#Set your local path here
+#
+# This is the climate model baseline path.
+exp_basepath <- '/fas_c/UTENTI/sandro/DATI/SEASONAL/ECMF/NC'
+#
+# This is the baseline path for the reference observational data
+obs_basepath <- '/fas_c/UTENTI/sandro/DATI/REANALYSIS/ERA5'
+#
+# This is the baseline path for the bias corrected data
+bco_basepath <- '/fas_impact2c/a/SANDRO_DA_SGI_ROTTO/sandro/MEDGOLD/BC'
 
 #Set domain
 
@@ -114,7 +129,7 @@ for (ivar in seq(1, length(variable))) {
   
   exp <- list(list(
     name = 'ecmf',
-    path = file.path('/dove/sandro/DATI/SEASONAL/ECMF/NC/$YEAR$/$VAR_NAME$_$EXP_NAME$_$START_DATE$.nc'),
+    path = file.path(exp_basepath,'$YEAR$/$VAR_NAME$_$EXP_NAME$_$START_DATE$.nc'),
     nc_var_name = variable[[ivar]]$exp_var_name,
     var_min = variable[[ivar]]$exp_var_min
   ))
@@ -122,7 +137,7 @@ for (ivar in seq(1, length(variable))) {
   
   obs <- list(list(
     name = 'ERA5',
-    path = file.path(paste0('/home/sandro/DATA/REANALYSIS/ERA5/ERA5-EU-',variable[[ivar]]$obs_var_name,'.$YEAR$_',variable[[ivar]]$obs_var_suffix,'.nc')),
+    path = file.path(paste0(obs_basepath,'/ERA5-EU-',variable[[ivar]]$obs_var_name,'.$YEAR$_',variable[[ivar]]$obs_var_suffix,'.nc')),
     nc_var_name = variable[[ivar]]$obs_var_name,
     var_min = variable[[ivar]]$obs_var_min
   ))
