@@ -8,7 +8,7 @@
 ##############################################################################
 #
 # INFO - Batch mode submission
-# R --vanilla --slave -f <scriptname>.R > R.log > R.err &
+# R CMD BATCH <scriptname>.R &
 #
 # --vanilla Combine --no-save, --no-restore, --no-site-file, --no-init-file and --no-environ
 # --slave Make R run as quietly as possible
@@ -175,33 +175,6 @@ for (ivar in seq(1, length(variable))) {
   elt <- end_time - start_time
   print(elt)
   
-  # PlotEquiMap(
-  #   obs_dat$data[1, 1, 1, 1, ,],
-  #   obs_dat$lon,
-  #   obs_dat$lat,
-  #   toptitle = 'ERA 5',
-  #   title_scale = 0.5,
-  #   filled.continents = FALSE
-  # )
-  # 
-  # PlotEquiMap(
-  #   exp_dat$data[1, 1, 1, 1, ,],
-  #   exp_dat$lon,
-  #   exp_dat$lat,
-  #   toptitle = 'System 5',
-  #   title_scale = 0.5,
-  #   filled.continents = FALSE
-  # )
-  # 
-  # PlotEquiMap(
-  #   exp_cst$data[1, 1, 1, 1, ,],
-  #   exp_cst$lon,
-  #   exp_cst$lat,
-  #   toptitle = 'System 5 - Bias Corrected',
-  #   title_scale = 0.5,
-  #   filled.continents = FALSE
-  # )
-  
   #######################################################################
   #
   # Save the results of bias correction in netcdf.
@@ -236,8 +209,8 @@ for (ivar in seq(1, length(variable))) {
     #Define Members
     ensmem <- as.integer(seq(1:nmem))
     
-    #Create dir 
-    dirname <- paste0('/dove/sandro/DATI/SEASONAL/ECMF/BC/',year(sdate),'/')
+    #Create dir for bias corrected data
+    dirname <- paste0(bco_basepath,'/',year(sdate),'/')
     if ( !dir.exists(dirname)) {dir.create(dirname)}
     
     #Define filename
