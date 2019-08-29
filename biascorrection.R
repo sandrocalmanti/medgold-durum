@@ -8,7 +8,7 @@
 ##############################################################################
 #
 # INFO - Batch mode submission
-# R CMD BATCH <scriptname>.R &
+# R CMD BATCH biascorrection.R &
 #
 # --vanilla Combine --no-save, --no-restore, --no-site-file, --no-init-file and --no-environ
 # --slave Make R run as quietly as possible
@@ -36,20 +36,12 @@ bco_basepath <- '/fas_impact2c/a/SANDRO_DA_SGI_ROTTO/sandro/MEDGOLD/BC'
 
 #Set domain
 
-domain <- list ( 
-  list( fname = 'er-medgold',
+domain <- list (
+        fname = 'er-medgold',
         latmin = 43.5,
         latmax = 45.5,
         lonmin = 9.0,
-        lonmax = 13.0),  
-  list( fname = 'it-medgold',
-        latmin = 39.5,
-        latmax = 45.5,
-        lonmin = 9.0,
-        lonmax = 19.0)
-)
-
-idomain <- 2
+        lonmax = 13.0)  
 
 #Set dates
 dayst <- '01'
@@ -149,10 +141,10 @@ for (ivar in seq(1, length(variable))) {
     sdates = sdates,
     storefreq = 'daily',
     output = 'lonlat',
-    latmin = domain[[idomain]]$latmin,
-    latmax = domain[[idomain]]$latmax,
-    lonmin = domain[[idomain]]$lonmin,
-    lonmax = domain[[idomain]]$lonmax,
+    latmin = domain$latmin,
+    latmax = domain$latmax,
+    lonmin = domain$lonmin,
+    lonmax = domain$lonmax,
     grid = 'r1440x720',
     nprocs = 8,
     path_glob_permissive = TRUE)
@@ -220,7 +212,7 @@ for (ivar in seq(1, length(variable))) {
              '_ecmf_',
              fdate,
              '_',
-             domain[[idomain]]$fname,
+             domain$fname,
              '.nc'
       )
     print(ncfname)
